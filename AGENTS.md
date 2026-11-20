@@ -1,1 +1,1 @@
-- After each request, add an entry to spec.md: what I asked, what was changed, and whether it works.
+- After each request, add an entry to prompts.md: what I asked, what you changed, and whether it worked.
