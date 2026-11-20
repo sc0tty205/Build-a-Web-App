@@ -1,0 +1,1 @@
+- After each request, add an entry to spec.md: what I asked, what was changed, and whether it works.

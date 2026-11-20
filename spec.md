@@ -54,3 +54,12 @@ t = sqrt(2h/g). Then measure the table's motion from the animation (the time for
 - The app will not include user accounts, multiplayer, leaderboards, cloud storage, or saved projects across sessions.
 - The app will not connect to physical shake-table equipment or use device sensors.
 - The app will not include 3D graphics, sound effects, or cinematic presentation.
+
+## Change log
+- Request: Build stage 1 as a single-file HTML mockup with every specified input, output, and plot using realistic placeholder values, without calculations.
+- Changed: Added a self-contained `index.html` with responsive layout, static tower/table view, building-piece inputs, shake settings, test results, acceleration plot, and tower inventory.
+- Works: Verified as a static mockup target; calculations and physics remain intentionally unimplemented.
+
+- Request: Build stage 2 only: add visual piece placement, removal/reset, and live cost and inventory updates to the existing mockup.
+- Changed: Updated `index.html` with piece selection, table-placement behavior, per-piece removal, reset, live total cost, piece counts, and inventory totals. No Matter.js physics or test calculations were added.
+- Works: Verified through a local HTTP server and static HTML/JavaScript checks. Piece placement, removal, reset, live counts, and cost updates are implemented without physics or later-stage calculations.

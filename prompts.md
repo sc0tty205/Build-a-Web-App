@@ -1,0 +1,6 @@
+- Request: Build stage 1 as a single-file index.html mockup showing placeholder inputs and outputs from the spec without calculations or later stages.
+- Changed: Created a self-contained responsive mockup with tower/table, building pieces, shake controls, earthquake selection, test outputs, inventory, and acceleration plot placeholders.
+- Works: Verified locally with a static HTTP server; all required mockup sections were served, the HTML passed static whitespace checks, and no script, physics library, or calculation formula was implemented.
+- Request: Build stage 2 only: enable visual piece selection and placement, removal, reset, and live cost/inventory updates.
+- Changed: Added stage-2 JavaScript and styles to `index.html` without Matter.js, shake motion, scoring, or later-stage calculations.
+- Works: Verified through a local HTTP server and static HTML checks. Stage 2 placement, removal, reset, live counts, and cost controls are present; no physics or later-stage calculations are implemented.
