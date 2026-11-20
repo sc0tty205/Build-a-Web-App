@@ -67,3 +67,7 @@ t = sqrt(2h/g). Then measure the table's motion from the animation (the time for
 - Request: Build stage 3 only: add Matter.js gravity, collisions, visual joints, and sinusoidal shake-table motion to the existing app.
 - Changed: Loaded Matter.js, created physical table, ground, and piece bodies, added DOM-to-physics synchronization and nearby-piece constraints, enabled amplitude/frequency controls, and added start/stop elapsed-table motion.
 - Works: Static structure checks confirmed Matter.js setup, physical boundaries, piece bodies, joint constraints, amplitude/frequency controls, and sinusoidal motion code. Browser physics interaction remains to be checked by the user.
+
+- Request: Build stage 4 only: add sinusoidal and earthquake test modes, 10-second survival, floor-contact failure, elapsed time, and strongest-survived peak acceleration.
+- Changed: Enabled motion selection, added the built-in earthquake acceleration record, calculated sinusoidal and earthquake peak acceleration, added test start/stop-again behavior, detected floor or beam contact with the ground, and updated elapsed, status, floor-contact, and best-score outputs.
+- Works: Static structure and local HTTP checks passed. Joint breakage and later-stage validation/polish remain unimplemented.

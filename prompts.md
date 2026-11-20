@@ -7,3 +7,6 @@
 - Request: Build stage 3 only: add Matter.js physics and sinusoidal shake-table motion.
 - Changed: Added Matter.js engine setup, gravity, ground/table bodies, physical building-piece bodies, nearby-piece joint constraints, synchronized piece rendering, amplitude/frequency controls, and start/stop table motion.
 - Works: Static structure checks confirmed the stage 3 physics setup and motion code. Browser physics interaction remains to be checked by the user; later-stage scoring and earthquake behavior remain unimplemented.
+- Request: Build stage 4 only: add test modes and scoring.
+- Changed: Enabled sinusoidal/earthquake motion selection, added the record and peak-acceleration handling, enforced a 10-second test, detected floor or beam ground contact, and updated elapsed, status, floor, and strongest-survived outputs.
+- Works: Static structure and local HTTP checks passed. Browser interaction remains to be checked; joint breakage and final validation/polish remain out of scope.

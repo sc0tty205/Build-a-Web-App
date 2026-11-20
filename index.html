@@ -614,7 +614,7 @@
         <h1 id="page-title">How strong can your tower be?</h1>
         <p class="lead">Place structural pieces on the shake table, choose a motion, and test whether the tower survives 10 seconds.</p>
       </div>
-      <p class="placeholder-note"><strong>Stage 3 physics foundation</strong><br>Place pieces, start the shake table, and observe gravity and collisions. Test scoring is not implemented yet.</p>
+      <p class="placeholder-note"><strong>Stage 4 test modes</strong><br>Choose sinusoidal or earthquake motion, run a test, and observe survival or floor-contact results.</p>
     </section>
 
     <div class="workspace">
@@ -697,7 +697,7 @@
           </label>
           <label class="field" for="motion">
             <span>Motion mode</span>
-            <select id="motion" disabled>
+            <select id="motion">
               <option>Sinusoidal shake</option>
               <option>Wasatch Front earthquake record</option>
             </select>
@@ -721,11 +721,11 @@
           </div>
           <div class="results">
             <div class="result-row"><span class="result-label">Status</span><strong id="build-status" class="result-value survived">Ready to build</strong></div>
-            <div class="result-row"><span class="result-label">Elapsed time</span><strong class="result-value">0.0 s</strong></div>
+            <div class="result-row"><span class="result-label">Elapsed time</span><strong id="elapsed-result" class="result-value">0.0 s</strong></div>
             <div class="result-row"><span class="result-label">Total cost</span><strong id="total-cost" class="result-value">$0</strong></div>
-            <div class="result-row"><span class="result-label">Strongest survived</span><strong class="result-value">— m/s²</strong></div>
+            <div class="result-row"><span class="result-label">Strongest survived</span><strong id="strongest-score" class="result-value">— m/s²</strong></div>
             <div class="result-row"><span class="result-label">Broken joints</span><strong class="result-value broken">0</strong></div>
-            <div class="result-row"><span class="result-label">Floor touching ground</span><strong class="result-value">No</strong></div>
+            <div class="result-row"><span class="result-label">Floor touching ground</span><strong id="floor-result" class="result-value">No</strong></div>
           </div>
         </section>
       </aside>
@@ -791,7 +791,11 @@
     const startButton = document.getElementById("start-test");
     const amplitudeInput = document.getElementById("amplitude");
     const frequencyInput = document.getElementById("frequency");
+    const motionInput = document.getElementById("motion");
     const elapsedOutput = document.getElementById("elapsed-output");
+    const elapsedResult = document.getElementById("elapsed-result");
+    const strongestScore = document.getElementById("strongest-score");
+    const floorResult = document.getElementById("floor-result");
     const statusPill = document.getElementById("status-pill");
     const placedCount = document.querySelector(".side-card .elapsed");
     const totalCost = document.getElementById("total-cost");
@@ -804,6 +808,19 @@
     let shakeStartedAt = 0;
     let tableStartX = 0;
     let constraints = [];
+    let strongestSurvived = null;
+    let testPeakAcceleration = null;
+    let earthquakeVelocity = 0;
+    let earthquakeDisplacement = 0;
+    const earthquakeRecord = [
+      0.00, 0.08, 0.16, 0.31, 0.48, 0.62, 0.74, 0.82,
+      0.71, 0.55, 0.38, 0.21, -0.04, -0.29, -0.51, -0.68,
+      -0.75, -0.64, -0.46, -0.25, 0.02, 0.34, 0.61, 0.72,
+      0.56, 0.39, 0.18, -0.08, -0.36, -0.58, -0.67, -0.49,
+      -0.21, 0.11, 0.43, 0.58, 0.44, 0.24, 0.05, -0.12,
+      -0.30, -0.38, -0.31, -0.16, 0.02, 0.17, 0.26, 0.21,
+      0.12, 0.03, -0.06, -0.11, -0.08, -0.03
+    ];
 
     const engine = Matter.Engine.create({ enableSleeping: false });
     engine.gravity.y = 1;
@@ -995,7 +1012,9 @@
       buildStatus.textContent = "Simulation stopped";
       buildStatus.className = "result-value";
       statusPill.textContent = "Stopped · Ready to build";
+      statusPill.style.color = "var(--green)";
       document.querySelector(".table-deck").style.transform = "";
+      elapsedResult.textContent = elapsedOutput.textContent;
     }
 
     resetButton.addEventListener("click", () => {
@@ -1012,6 +1031,12 @@
       });
       selectedType = null;
       elapsedOutput.textContent = "0.0 s";
+      elapsedResult.textContent = "0.0 s";
+      floorResult.textContent = "No";
+      floorResult.className = "result-value";
+      strongestSurvived = null;
+      strongestScore.textContent = "— m/s²";
+      testPeakAcceleration = null;
       pieceButtons.forEach((button) => {
         button.classList.remove("selected");
         button.setAttribute("aria-pressed", "false");
@@ -1025,6 +1050,21 @@
       if (shakeRunning) {
         stopShaking();
         return;
+      }
+
+      earthquakeVelocity = 0;
+      earthquakeDisplacement = 0;
+      elapsedOutput.textContent = "0.0 s";
+      elapsedResult.textContent = "0.0 s";
+      floorResult.textContent = "No";
+      floorResult.className = "result-value";
+
+      if (motionInput.value.startsWith("Sinusoidal")) {
+        const amplitude = Number(amplitudeInput.value);
+        const frequency = Number(frequencyInput.value);
+        testPeakAcceleration = amplitude * Math.pow(2 * Math.PI * frequency, 2);
+      } else {
+        testPeakAcceleration = 0.82 * 9.81;
       }
 
       shakeRunning = true;
@@ -1045,6 +1085,12 @@
     frequencyInput.addEventListener("input", () => {
       document.querySelector('label[for="frequency"] output').textContent =
         `${Number(frequencyInput.value).toFixed(2)} Hz`;
+    });
+
+    motionInput.addEventListener("change", () => {
+      const earthquakeMode = motionInput.value.startsWith("Wasatch");
+      amplitudeInput.disabled = earthquakeMode;
+      frequencyInput.disabled = earthquakeMode;
     });
 
     function syncPiecesAndJoints() {
@@ -1077,20 +1123,86 @@
 
     setupBoundaries();
 
+    function floorHasTouchedGround() {
+      if (!groundBody) return false;
+      const groundTop = groundBody.bounds.min.y;
+      return [...placedPieces.querySelectorAll(".placed-piece")].some((piece) => {
+        if (!piece.body || !["mass", "beam"].includes(piece.dataset.type)) return false;
+        const halfHeight = Math.max(15, (pieceTypes[piece.dataset.type].height / 2));
+        return piece.body.bounds.max.y >= groundTop ||
+          piece.body.position.y + halfHeight >= groundTop;
+      });
+    }
+
+    function finishTest(survived, elapsed) {
+      if (!shakeRunning) return;
+      shakeRunning = false;
+      elapsedOutput.textContent = `${elapsed.toFixed(1)} s`;
+      elapsedResult.textContent = `${elapsed.toFixed(1)} s`;
+      startButton.textContent = "Test again";
+      startButton.classList.remove("secondary");
+      startButton.classList.add("primary");
+
+      if (survived) {
+        if (testPeakAcceleration !== null &&
+            (strongestSurvived === null || testPeakAcceleration > strongestSurvived)) {
+          strongestSurvived = testPeakAcceleration;
+          strongestScore.textContent = `${strongestSurvived.toFixed(2)} m/s²`;
+        }
+        buildStatus.textContent = "Survived 10 seconds";
+        buildStatus.className = "result-value survived";
+        statusPill.textContent = "Survived";
+        statusPill.style.color = "var(--green)";
+      } else {
+        floorResult.textContent = "Yes";
+        floorResult.className = "result-value broken";
+        buildStatus.textContent = "Collapsed · floor touched ground";
+        buildStatus.className = "result-value broken";
+        statusPill.textContent = "Collapsed";
+        statusPill.style.color = "var(--red)";
+      }
+      document.querySelector(".table-deck").style.transform = "";
+    }
+
     function animate(now) {
       if (shakeRunning && physicsTable) {
-        const amplitudeMeters = Number(amplitudeInput.value);
-        const frequencyHz = Number(frequencyInput.value);
-        const pixelsPerMeter = 50;
         const elapsed = (now - shakeStartedAt) / 1000;
-        const displacement = amplitudeMeters * pixelsPerMeter *
-          Math.sin(2 * Math.PI * frequencyHz * elapsed);
+        let displacement = 0;
+
+        if (motionInput.value.startsWith("Sinusoidal")) {
+          const amplitudeMeters = Number(amplitudeInput.value);
+          const frequencyHz = Number(frequencyInput.value);
+          const pixelsPerMeter = 50;
+          displacement = amplitudeMeters * pixelsPerMeter *
+            Math.sin(2 * Math.PI * frequencyHz * elapsed);
+        } else {
+          const recordPosition = Math.min(elapsed / 10, 1) * (earthquakeRecord.length - 1);
+          const lowerIndex = Math.floor(recordPosition);
+          const upperIndex = Math.min(lowerIndex + 1, earthquakeRecord.length - 1);
+          const fraction = recordPosition - lowerIndex;
+          const accelerationG =
+            earthquakeRecord[lowerIndex] +
+            (earthquakeRecord[upperIndex] - earthquakeRecord[lowerIndex]) * fraction;
+          const dt = 1 / 60;
+          earthquakeVelocity += accelerationG * 9.81 * 50 * dt;
+          earthquakeDisplacement += earthquakeVelocity * dt;
+          earthquakeDisplacement = Math.max(-130, Math.min(130, earthquakeDisplacement));
+          displacement = earthquakeDisplacement;
+        }
+
         Matter.Body.setPosition(physicsTable, {
           x: tableStartX + displacement,
           y: physicsTable.position.y
         });
         document.querySelector(".table-deck").style.transform = `translateX(${displacement}px)`;
         elapsedOutput.textContent = `${elapsed.toFixed(1)} s`;
+        elapsedResult.textContent = `${elapsed.toFixed(1)} s`;
+
+        if (floorHasTouchedGround()) {
+          finishTest(false, elapsed);
+        } else if (elapsed >= 10) {
+          finishTest(true, 10);
+        }
       }
 
       syncPiecesAndJoints();
