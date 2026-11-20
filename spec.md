@@ -63,3 +63,7 @@ t = sqrt(2h/g). Then measure the table's motion from the animation (the time for
 - Request: Build stage 2 only: add visual piece placement, removal/reset, and live cost and inventory updates to the existing mockup.
 - Changed: Updated `index.html` with piece selection, table-placement behavior, per-piece removal, reset, live total cost, piece counts, and inventory totals. No Matter.js physics or test calculations were added.
 - Works: Verified through a local HTTP server and static HTML/JavaScript checks. Piece placement, removal, reset, live counts, and cost updates are implemented without physics or later-stage calculations.
+
+- Request: Build stage 3 only: add Matter.js gravity, collisions, visual joints, and sinusoidal shake-table motion to the existing app.
+- Changed: Loaded Matter.js, created physical table, ground, and piece bodies, added DOM-to-physics synchronization and nearby-piece constraints, enabled amplitude/frequency controls, and added start/stop elapsed-table motion.
+- Works: Static structure checks confirmed Matter.js setup, physical boundaries, piece bodies, joint constraints, amplitude/frequency controls, and sinusoidal motion code. Browser physics interaction remains to be checked by the user.

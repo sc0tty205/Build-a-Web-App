@@ -4,3 +4,6 @@
 - Request: Build stage 2 only: enable visual piece selection and placement, removal, reset, and live cost/inventory updates.
 - Changed: Added stage-2 JavaScript and styles to `index.html` without Matter.js, shake motion, scoring, or later-stage calculations.
 - Works: Verified through a local HTTP server and static HTML checks. Stage 2 placement, removal, reset, live counts, and cost controls are present; no physics or later-stage calculations are implemented.
+- Request: Build stage 3 only: add Matter.js physics and sinusoidal shake-table motion.
+- Changed: Added Matter.js engine setup, gravity, ground/table bodies, physical building-piece bodies, nearby-piece joint constraints, synchronized piece rendering, amplitude/frequency controls, and start/stop table motion.
+- Works: Static structure checks confirmed the stage 3 physics setup and motion code. Browser physics interaction remains to be checked by the user; later-stage scoring and earthquake behavior remain unimplemented.
