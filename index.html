@@ -571,6 +571,92 @@
     td:last-child, th:last-child { text-align: right; }
     tr:last-child td { border-bottom: 0; }
 
+    .validation-card {
+      margin-top: 14px;
+      padding: 14px;
+    }
+
+    .validation-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 12px;
+    }
+
+    .validation-box {
+      padding: 12px;
+      border: 1px solid var(--line);
+      border-radius: 10px;
+      background: #fbfcf8;
+    }
+
+    .validation-box h3 {
+      margin-bottom: 8px;
+    }
+
+    .validation-row {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) auto;
+      gap: 10px;
+      align-items: center;
+      min-height: 31px;
+      color: var(--muted);
+      font-size: .73rem;
+      border-bottom: 1px solid #edf0ed;
+    }
+
+    .validation-row:last-of-type {
+      border-bottom: 0;
+    }
+
+    .validation-row strong {
+      color: var(--ink);
+      text-align: right;
+    }
+
+    .validation-controls {
+      display: grid;
+      grid-template-columns: 1fr auto;
+      gap: 8px;
+      margin-top: 10px;
+    }
+
+    .validation-controls input {
+      min-width: 0;
+      padding: 8px 9px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      color: var(--ink);
+      background: var(--paper);
+    }
+
+    .validation-controls .button {
+      min-width: 112px;
+    }
+
+    .validation-status {
+      margin-top: 8px;
+      min-height: 18px;
+      color: var(--muted);
+      font-size: .71rem;
+    }
+
+    .physics-joint.broken {
+      background: var(--red);
+      box-shadow: 0 0 0 2px rgba(200, 88, 80, .18);
+    }
+
+    .validation-drop-block {
+      position: absolute;
+      z-index: 8;
+      width: 20px;
+      height: 20px;
+      border: 2px solid var(--ink);
+      border-radius: 3px;
+      background: var(--orange);
+      transform: translate(-50%, -50%);
+      pointer-events: none;
+    }
+
     @media (max-width: 980px) {
       .workspace { grid-template-columns: 1fr; }
       .side { grid-template-columns: repeat(2, minmax(0, 1fr)); }
@@ -584,6 +670,7 @@
       .simulation { min-height: 380px; }
       .side { grid-template-columns: 1fr; }
       .piece-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+      .validation-grid { grid-template-columns: 1fr; }
     }
 
     @media (max-width: 430px) {
@@ -724,7 +811,7 @@
             <div class="result-row"><span class="result-label">Elapsed time</span><strong id="elapsed-result" class="result-value">0.0 s</strong></div>
             <div class="result-row"><span class="result-label">Total cost</span><strong id="total-cost" class="result-value">$0</strong></div>
             <div class="result-row"><span class="result-label">Strongest survived</span><strong id="strongest-score" class="result-value">— m/s²</strong></div>
-            <div class="result-row"><span class="result-label">Broken joints</span><strong class="result-value broken">0</strong></div>
+            <div class="result-row"><span class="result-label">Broken joints</span><strong id="broken-joints-output" class="result-value broken">0</strong></div>
             <div class="result-row"><span class="result-label">Floor touching ground</span><strong id="floor-result" class="result-value">No</strong></div>
           </div>
         </section>
@@ -773,6 +860,40 @@
         </div>
       </div>
     </section>
+
+    <section class="card validation-card" aria-labelledby="validation-title">
+      <div class="panel-head">
+        <div>
+          <p class="kicker">Physics validation</p>
+          <h2 id="validation-title">Hand-calculation checks</h2>
+        </div>
+        <span class="elapsed">Gravity: <strong>9.81 m/s²</strong></span>
+      </div>
+      <div class="validation-grid">
+        <div class="validation-box">
+          <h3>Drop test</h3>
+          <div class="validation-row"><span>Known height</span><strong id="drop-height-output">2.00 m</strong></div>
+          <div class="validation-row"><span>Expected fall time</span><strong id="drop-expected">0.639 s</strong></div>
+          <div class="validation-row"><span>Measured fall time</span><strong id="drop-measured">—</strong></div>
+          <div class="validation-row"><span>Difference</span><strong id="drop-difference">—</strong></div>
+          <div class="validation-controls">
+            <input id="drop-height" type="number" min="0.25" max="5" step="0.25" value="2" aria-label="Drop height in meters">
+            <button id="run-drop" class="button secondary" type="button">Run drop test</button>
+          </div>
+          <div id="drop-status" class="validation-status">Set a height, then drop a single block.</div>
+        </div>
+
+        <div class="validation-box">
+          <h3>Shake-table motion</h3>
+          <div class="validation-row"><span>Set amplitude</span><strong id="motion-amplitude-output">0.30 m</strong></div>
+          <div class="validation-row"><span>Set frequency</span><strong id="motion-frequency-output">1.00 Hz</strong></div>
+          <div class="validation-row"><span>Time for 10 cycles</span><strong id="cycle-time-output">—</strong></div>
+          <div class="validation-row"><span>Measured amplitude</span><strong id="amplitude-measured">—</strong></div>
+          <div class="validation-row"><span>Measured frequency</span><strong id="frequency-measured">—</strong></div>
+          <div class="validation-status">Start the table and let at least 10 complete cycles run.</div>
+        </div>
+      </div>
+    </section>
   </main>
 
   <script src="https://cdnjs.cloudflare.com/ajax/libs/matter-js/0.20.0/matter.min.js"></script>
@@ -796,6 +917,18 @@
     const elapsedResult = document.getElementById("elapsed-result");
     const strongestScore = document.getElementById("strongest-score");
     const floorResult = document.getElementById("floor-result");
+    const dropHeightInput = document.getElementById("drop-height");
+    const dropHeightOutput = document.getElementById("drop-height-output");
+    const dropExpected = document.getElementById("drop-expected");
+    const dropMeasured = document.getElementById("drop-measured");
+    const dropDifference = document.getElementById("drop-difference");
+    const dropStatus = document.getElementById("drop-status");
+    const runDropButton = document.getElementById("run-drop");
+    const motionAmplitudeOutput = document.getElementById("motion-amplitude-output");
+    const motionFrequencyOutput = document.getElementById("motion-frequency-output");
+    const cycleTimeOutput = document.getElementById("cycle-time-output");
+    const amplitudeMeasured = document.getElementById("amplitude-measured");
+    const frequencyMeasured = document.getElementById("frequency-measured");
     const statusPill = document.getElementById("status-pill");
     const placedCount = document.querySelector(".side-card .elapsed");
     const totalCost = document.getElementById("total-cost");
@@ -812,6 +945,16 @@
     let testPeakAcceleration = null;
     let earthquakeVelocity = 0;
     let earthquakeDisplacement = 0;
+    let dropBody = null;
+    let dropStartedAt = null;
+    let dropHeightMeters = 2;
+    let tableMotionTracking = false;
+    let tableMotionStartedAt = null;
+    let tablePreviousDisplacement = 0;
+    let tableHalfCycles = 0;
+    let tableMinDisplacement = 0;
+    let tableMaxDisplacement = 0;
+    let brokenJointCount = 0;
     const earthquakeRecord = [
       0.00, 0.08, 0.16, 0.31, 0.48, 0.62, 0.74, 0.82,
       0.71, 0.55, 0.38, 0.21, -0.04, -0.29, -0.51, -0.68,
@@ -930,6 +1073,7 @@
             damping: 0.08,
             length: distance
           });
+          constraint.originalLength = distance;
           constraints.push(constraint);
           Matter.Composite.add(engine.world, constraint);
 
@@ -1019,8 +1163,24 @@
 
     resetButton.addEventListener("click", () => {
       stopShaking();
+      tableMotionTracking = false;
+      tableMotionStartedAt = null;
+      tablePreviousDisplacement = 0;
+      tableHalfCycles = 0;
+      tableMinDisplacement = 0;
+      tableMaxDisplacement = 0;
+      cycleTimeOutput.textContent = "—";
+      amplitudeMeasured.textContent = "—";
+      frequencyMeasured.textContent = "—";
       placedPieces.replaceChildren();
       constraints = [];
+      brokenJointCount = 0;
+      document.getElementById("broken-joints-output").textContent = "0";
+      if (dropBody) {
+        Matter.Composite.remove(engine.world, dropBody);
+        dropBody = null;
+        document.querySelector(".validation-drop-block")?.remove();
+      }
       Matter.Composite.allBodies(engine.world).forEach((body) => {
         if (body.label !== "shake-table" && body.label !== "ground") {
           Matter.Composite.remove(engine.world, body);
@@ -1063,6 +1223,17 @@
         const amplitude = Number(amplitudeInput.value);
         const frequency = Number(frequencyInput.value);
         testPeakAcceleration = amplitude * Math.pow(2 * Math.PI * frequency, 2);
+        tableMotionTracking = true;
+        tableMotionStartedAt = performance.now();
+        tablePreviousDisplacement = 0;
+        tableHalfCycles = 0;
+        tableMinDisplacement = 0;
+        tableMaxDisplacement = 0;
+        cycleTimeOutput.textContent = "—";
+        amplitudeMeasured.textContent = "—";
+        frequencyMeasured.textContent = "—";
+        motionAmplitudeOutput.textContent = `${amplitude.toFixed(2)} m`;
+        motionFrequencyOutput.textContent = `${frequency.toFixed(2)} Hz`;
       } else {
         testPeakAcceleration = 0.82 * 9.81;
       }
@@ -1080,17 +1251,70 @@
     amplitudeInput.addEventListener("input", () => {
       document.querySelector('label[for="amplitude"] output').textContent =
         `${Number(amplitudeInput.value).toFixed(2)} m`;
+      motionAmplitudeOutput.textContent = `${Number(amplitudeInput.value).toFixed(2)} m`;
     });
 
     frequencyInput.addEventListener("input", () => {
       document.querySelector('label[for="frequency"] output').textContent =
         `${Number(frequencyInput.value).toFixed(2)} Hz`;
+      motionFrequencyOutput.textContent = `${Number(frequencyInput.value).toFixed(2)} Hz`;
     });
 
     motionInput.addEventListener("change", () => {
       const earthquakeMode = motionInput.value.startsWith("Wasatch");
       amplitudeInput.disabled = earthquakeMode;
       frequencyInput.disabled = earthquakeMode;
+    });
+
+    dropHeightInput.addEventListener("input", () => {
+      const height = Math.max(0, Number(dropHeightInput.value) || 0);
+      dropHeightOutput.textContent = `${height.toFixed(2)} m`;
+      if (height > 0) {
+        const expected = Math.sqrt((2 * height) / 9.81);
+        dropExpected.textContent = `${expected.toFixed(3)} s`;
+      } else {
+        dropExpected.textContent = "—";
+      }
+      dropMeasured.textContent = "—";
+      dropDifference.textContent = "—";
+      dropStatus.textContent = "Set a height, then drop a single block.";
+    });
+
+    runDropButton.addEventListener("click", () => {
+      if (dropBody) {
+        Matter.Composite.remove(engine.world, dropBody);
+        document.querySelector(".validation-drop-block")?.remove();
+      }
+
+      dropHeightMeters = Math.max(0.25, Math.min(5, Number(dropHeightInput.value) || 2));
+      dropHeightInput.value = dropHeightMeters;
+      dropHeightOutput.textContent = `${dropHeightMeters.toFixed(2)} m`;
+
+      const expected = Math.sqrt((2 * dropHeightMeters) / 9.81);
+      dropExpected.textContent = `${expected.toFixed(3)} s`;
+      dropMeasured.textContent = "—";
+      dropDifference.textContent = "—";
+      dropStatus.textContent = "Block released.";
+
+      const bounds = simulation.getBoundingClientRect();
+      const groundTop = groundBody ? groundBody.bounds.min.y : bounds.height - 54;
+      const pixelsPerMeter = 50;
+      const releaseY = Math.max(70, groundTop - dropHeightMeters * pixelsPerMeter - 10);
+      dropStartedAt = performance.now();
+      dropBody = Matter.Bodies.rectangle(bounds.width / 2, releaseY, 20, 20, {
+        restitution: 0.05,
+        friction: 0.8,
+        label: "validation-block"
+      });
+      Matter.Composite.add(engine.world, dropBody);
+
+      const blockElement = document.createElement("span");
+      blockElement.className = "validation-drop-block";
+      placedPieces.appendChild(blockElement);
+      blockElement.dataset.bodyAttached = "true";
+      blockElement.dropBody = dropBody;
+      blockElement.style.left = `${dropBody.position.x}px`;
+      blockElement.style.top = `${dropBody.position.y}px`;
     });
 
     function syncPiecesAndJoints() {
@@ -1107,10 +1331,32 @@
         }
       });
 
+      const dropElement = placedPieces.querySelector(".validation-drop-block");
+      if (dropBody && dropElement) {
+        dropElement.style.left = `${dropBody.position.x}px`;
+        dropElement.style.top = `${dropBody.position.y}px`;
+      }
+
       const joints = [...placedPieces.querySelectorAll(".physics-joint")];
       let constraintIndex = 0;
-      constraints.forEach((constraint) => {
+      [...constraints].forEach((constraint) => {
         if (!joints[constraintIndex]) return;
+        const dx = constraint.bodyA.position.x - constraint.bodyB.position.x;
+        const dy = constraint.bodyA.position.y - constraint.bodyB.position.y;
+        const currentLength = Math.hypot(dx, dy);
+        const originalLength = constraint.originalLength || constraint.length || currentLength;
+
+        if (currentLength > originalLength * 1.8) {
+          joints[constraintIndex].classList.add("broken");
+          if (!joints[constraintIndex].dataset.broken) {
+            joints[constraintIndex].dataset.broken = "true";
+            brokenJointCount++;
+            document.getElementById("broken-joints-output").textContent = brokenJointCount;
+          }
+          Matter.Composite.remove(engine.world, constraint);
+          constraints = constraints.filter((item) => item !== constraint);
+        }
+
         const midpoint = {
           x: (constraint.bodyA.position.x + constraint.bodyB.position.x) / 2,
           y: (constraint.bodyA.position.y + constraint.bodyB.position.y) / 2
@@ -1165,6 +1411,24 @@
     }
 
     function animate(now) {
+      if (dropBody && groundBody) {
+        const groundTop = groundBody.bounds.min.y;
+        if (dropBody.bounds.max.y >= groundTop && dropStartedAt) {
+          const measured = (now - dropStartedAt) / 1000;
+          const expected = Math.sqrt((2 * dropHeightMeters) / 9.81);
+          const difference = measured - expected;
+          dropMeasured.textContent = `${measured.toFixed(3)} s`;
+          dropDifference.textContent = `${Math.abs(difference).toFixed(3)} s ${difference >= 0 ? "slow" : "fast"}`;
+          dropStatus.textContent = Math.abs(difference) <= 0.12
+            ? "Within the 0.12 s check tolerance."
+            : "Outside the 0.12 s check tolerance.";
+          Matter.Composite.remove(engine.world, dropBody);
+          document.querySelector(".validation-drop-block")?.remove();
+          dropBody = null;
+          dropStartedAt = null;
+        }
+      }
+
       if (shakeRunning && physicsTable) {
         const elapsed = (now - shakeStartedAt) / 1000;
         let displacement = 0;
@@ -1175,6 +1439,26 @@
           const pixelsPerMeter = 50;
           displacement = amplitudeMeters * pixelsPerMeter *
             Math.sin(2 * Math.PI * frequencyHz * elapsed);
+
+          tableMinDisplacement = Math.min(tableMinDisplacement, displacement);
+          tableMaxDisplacement = Math.max(tableMaxDisplacement, displacement);
+          if (tableMotionTracking) {
+            const sign = displacement === 0 ? 0 : Math.sign(displacement);
+            if (tablePreviousDisplacement !== 0 && sign !== 0 &&
+                sign !== tablePreviousDisplacement) {
+              tableHalfCycles++;
+              if (tableHalfCycles >= 20 && tableMotionStartedAt !== null) {
+                const measuredTime = (now - tableMotionStartedAt) / 1000;
+                const measuredAmplitude = ((tableMaxDisplacement - tableMinDisplacement) / 2) / pixelsPerMeter;
+                const measuredFrequency = 10 / measuredTime;
+                cycleTimeOutput.textContent = `${measuredTime.toFixed(3)} s`;
+                amplitudeMeasured.textContent = `${measuredAmplitude.toFixed(3)} m`;
+                frequencyMeasured.textContent = `${measuredFrequency.toFixed(3)} Hz`;
+                tableMotionTracking = false;
+              }
+            }
+            tablePreviousDisplacement = sign;
+          }
         } else {
           const recordPosition = Math.min(elapsed / 10, 1) * (earthquakeRecord.length - 1);
           const lowerIndex = Math.floor(recordPosition);

@@ -10,3 +10,6 @@
 - Request: Build stage 4 only: add test modes and scoring.
 - Changed: Enabled sinusoidal/earthquake motion selection, added the record and peak-acceleration handling, enforced a 10-second test, detected floor or beam ground contact, and updated elapsed, status, floor, and strongest-survived outputs.
 - Works: Static structure and local HTTP checks passed. Browser interaction remains to be checked; joint breakage and final validation/polish remain out of scope.
+- Request: Build stage 5 only: complete validation and polish.
+- Changed: Added drop-time comparison, 10-cycle amplitude/frequency measurement, broken-joint feedback, and responsive validation layout.
+- Works: Static structure and local HTTP verification passed. Browser interaction for the validation tools remains to be checked; no features beyond the specification were added.

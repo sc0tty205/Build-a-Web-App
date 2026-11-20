@@ -71,3 +71,7 @@ t = sqrt(2h/g). Then measure the table's motion from the animation (the time for
 - Request: Build stage 4 only: add sinusoidal and earthquake test modes, 10-second survival, floor-contact failure, elapsed time, and strongest-survived peak acceleration.
 - Changed: Enabled motion selection, added the built-in earthquake acceleration record, calculated sinusoidal and earthquake peak acceleration, added test start/stop-again behavior, detected floor or beam contact with the ground, and updated elapsed, status, floor-contact, and best-score outputs.
 - Works: Static structure and local HTTP checks passed. Joint breakage and later-stage validation/polish remain unimplemented.
+
+- Request: Build stage 5 only: complete the validation and polish described in the spec.
+- Changed: Added drop-test controls and hand-calculation comparison, 10-cycle table motion measurement outputs, broken-joint visual output, and small-screen validation layout.
+- Works: Static structure and local HTTP checks passed. Browser interaction for drop, 10-cycle, and joint behavior remains to be checked by the user.
