@@ -1,0 +1,114 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Earthquake Shake-Down</title>
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <main class="app-shell">
+      <header class="app-header">
+        <div>
+          <p class="eyebrow">Structural simulation</p>
+          <h1>Earthquake Shake-Down</h1>
+        </div>
+        <div class="status-chip" aria-label="Test status">
+          <span class="status-dot"></span>
+          Ready
+        </div>
+      </header>
+
+      <div class="workspace">
+        <section class="simulation-column" aria-labelledby="simulation-title">
+          <div class="panel-heading">
+            <div>
+              <p class="section-label">2D test area</p>
+              <h2 id="simulation-title">Shake table</h2>
+            </div>
+            <span class="elapsed"><strong>0.0</strong> s</span>
+          </div>
+
+          <div class="simulation" aria-label="Empty shake table simulation area">
+            <div class="grid-lines"></div>
+            <div class="instruction-card">
+              <div class="instruction-icon" aria-hidden="true">+</div>
+              <div>
+                <strong>Build your tower</strong>
+                <p>Select a piece, then place it on the table.</p>
+              </div>
+            </div>
+            <div class="shake-table">
+              <div class="table-deck"></div>
+              <div class="table-legs">
+                <span></span>
+                <span></span>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <aside class="piece-panel" aria-labelledby="piece-title">
+          <div class="panel-heading">
+            <div>
+              <p class="section-label">Components</p>
+              <h2 id="piece-title">Building pieces</h2>
+            </div>
+          </div>
+
+          <div class="piece-list">
+            <button class="piece-card column-piece" type="button">
+              <span class="piece-preview"><i></i></span>
+              <span class="piece-copy"><strong>Column</strong><small>$50</small></span>
+            </button>
+            <button class="piece-card beam-piece" type="button">
+              <span class="piece-preview"><i></i></span>
+              <span class="piece-copy"><strong>Beam</strong><small>$40</small></span>
+            </button>
+            <button class="piece-card brace-piece" type="button">
+              <span class="piece-preview"><i></i></span>
+              <span class="piece-copy"><strong>Brace</strong><small>$30</small></span>
+            </button>
+            <button class="piece-card mass-piece" type="button">
+              <span class="piece-preview"><i></i></span>
+              <span class="piece-copy"><strong>Floor mass</strong><small>$25</small></span>
+            </button>
+          </div>
+        </aside>
+      </div>
+
+      <section class="control-panel" aria-labelledby="control-title">
+        <div class="settings">
+          <div class="panel-heading compact-heading">
+            <div>
+              <p class="section-label">Earthquake</p>
+              <h2 id="control-title">Shake settings</h2>
+            </div>
+          </div>
+          <div class="field-grid">
+            <label class="field">
+              <span>Amplitude <strong>0.30 m</strong></span>
+              <input type="range" min="0.05" max="1" value="0.30" step="0.05" disabled />
+            </label>
+            <label class="field">
+              <span>Frequency <strong>1.0 Hz</strong></span>
+              <input type="range" min="0.1" max="5" value="1" step="0.1" disabled />
+            </label>
+          </div>
+          <button class="record-button" type="button" disabled>
+            <span aria-hidden="true">≈</span> Use earthquake record
+          </button>
+        </div>
+
+        <div class="metrics">
+          <div class="metric"><span>Total cost</span><strong>$0</strong></div>
+          <div class="metric"><span>Best score</span><strong>— <small>m/s²</small></strong></div>
+          <div class="action-buttons">
+            <button class="primary-button" type="button" disabled>Start test</button>
+            <button class="secondary-button" type="button" disabled>Reset</button>
+          </div>
+        </div>
+      </section>
+    </main>
+  </body>
+</html>
